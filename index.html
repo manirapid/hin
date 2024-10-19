@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAPID RESCUE First Aid</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        color: #000000;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 50px auto;
+        text-align: center;
+    }
+    .header {
+        background-color: #ff0000;
+        color: #ffffff;
+        padding: 20px;
+    }
+    .language-btn {
+        background-color: #ff0000;
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        margin: 10px;
+        cursor: pointer;
+    }
+    .injury-link {
+        display: inline-block;
+        margin: 10px;
+        text-decoration: none;
+        color: #ff0000;
+        border: 2px solid #ff0000;
+        padding: 10px 20px;
+        border-radius: 5px;
+    }
+    .injury-link:hover {
+        background-color: #ff0000;
+        color: #ffffff;
+    }
+    #camera-container {
+        margin-top: 20px;
+    }
+    #camera {
+        display: none;
+        width: 100%;
+        max-width: 640px;
+    }
+    #capture-button {
+        display: none;
+        margin: 10px;
+        padding: 10px 20px;
+        background-color: #ff0000;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+    }
+    #stop-camera-button {
+        display: none;
+        margin: 10px;
+        padding: 10px 20px;
+        background-color: #ff0000;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+    }
+    #teachable-machine-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    #redirect-button {
+        display: none;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #ff0000;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 id="header-text">रैपिड रेस्क्यू प्राथमिक चिकित्सा</h1>
+    </div>
+
+    <div>
+        <h2 id="injury-select-text">चोट का चयन करें:</h2>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=qQNn2ErIc70&list=PLGi_K7VEsg4e4FiRjGWYPRdRqicF7Htww&index=7" onclick="showInjuryVideo('leg')">पैर की फ्रैक्चर</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=tiB5ydP_TKg&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=5" onclick="showInjuryVideo('head')">सिर से खून बहना</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=j5FRj7k9jgE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=8" onclick="showInjuryVideo('knee')">हाथ से खून बहना</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=obDx8Jbwlsc&list=PLGi_K7VEsg4e4FiRjGWYPRdRqicF7Htww&index=3" onclick="showInjuryVideo('hand')">हाथ की फ्रैक्चर</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=jiztPa5qhvQ&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=3" onclick="showInjuryVideo('leg')">हाथ में सूजन</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=jLOph9Zn6HI&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=7" onclick="showInjuryVideo('leg')">सिर से खून बहना</a>
+        <a class="injury-link" href="https://www.youtube.com/watch?v=354-yuZBrDE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=6" onclick="showInjuryVideo('leg')">घुटने की फ्रैक्चर</a>
+    </div>
+    
+    <div id="camera-container">
+        <video id="camera" autoplay></video>
+        <button id="capture-button" onclick="captureImage()">तस्वीर लें</button>
+        <button id="stop-camera-button" onclick="stopCamera()">कैमरा बंद करें</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+    
+    <div>
+        <button onclick="startCamera()">कैमरा चालू करें</button>
+        <h2 id="contact-text">संपर्क करें:</h2>
+        <button onclick="callNumber(108)">108 पर कॉल करें</button>
+        <button onclick="callNumber(100)">100 पर कॉल करें</button>
+    </div>
+
+    <div id="video-container" style="display: none;">
+        <h2 id="video-header-text">चोट के लिए प्राथमिक चिकित्सा वीडियो:</h2>
+        <div id="video-player"></div>
+    </div>
+</div>
+
+<div id="teachable-machine-container">
+    <div>शिक्षण मशीन छवि मॉडल</div>
+    <button type="button" onclick="init()">शुरू करें</button>
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+</div>
+
+<button id="redirect-button" onclick="redirectToPredictedInjury()">भविष्यवाणी की गई चोट का वीडियो देखें</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script type="text/javascript">
+    const URL = "https://teachablemachine.withgoogle.com/models/PyahG8Ugw/";
+
+    let model, webcam, labelContainer, maxPredictions;
+    let detectedClass = ""; // Initialize detectedClass for storing predictions
+
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        const flip = true;
+        webcam = new tmImage.Webcam(200, 200, flip);
+        await webcam.setup();
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    async function loop() {
+        webcam.update();
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+        const prediction = await model.predict(webcam.canvas);
+        let highestProbability = 0;
+
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+
+            if (prediction[i].probability > highestProbability) {
+                highestProbability = prediction[i].probability;
+                detectedClass = prediction[i].className;
+            }
+        }
+
+        if (highestProbability > 0.8) { // Adjust threshold as needed
+            document.getElementById('redirect-button').style.display = 'block';
+        }
+    }
+
+    function callNumber(number) {
+        alert('Calling ' + number);
+    }
+
+    function showInjuryVideo(injuryType) {
+        const videoContainer = document.getElementById('video-container');
+        const videoPlayer = document.getElementById('video-player');
+
+        const injuryVideos = {
+            'leg fracture': 'https://www.youtube.com/watch?v=qQNn2ErIc70&list=PLGi_K7VEsg4e4FiRjGWYPRdRqicF7Htww&index=7',
+            'head bleeding': 'https://www.youtube.com/watch?v=jLOph9Zn6HI&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=7',
+            'hand bleeding': 'https://www.youtube.com/watch?v=j5FRj7k9jgE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=8',
+            'hand fracture': 'https://www.youtube.com/watch?v=8Xmifg44umg&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=1',
+            'hand swelling': 'https://www.youtube.com/watch?v=jiztPa5qhvQ&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=3',
+            'leg bleeding': 'https://www.youtube.com/watch?v=tiB5ydP_TKg&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=5',
+            'knee fracture': 'https://www.youtube.com/watch?v=354-yuZBrDE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=6'
+        };
+
+        videoPlayer.innerHTML = '<iframe width="560" height="315" src="' + injuryVideos[injuryType] + '" frameborder="0" allowfullscreen></iframe>';
+        videoContainer.style.display = 'block';
+    }
+
+    function startCamera() {
+        const camera = document.getElementById('camera');
+        const captureButton = document.getElementById('capture-button');
+        const stopButton = document.getElementById('stop-camera-button');
+        
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                camera.srcObject = stream;
+                camera.style.display = 'block';
+                captureButton.style.display = 'inline-block';
+                stopButton.style.display = 'inline-block';
+            })
+            .catch((error) => {
+                console.error("Error accessing the camera: ", error);
+            });
+    }
+
+    function stopCamera() {
+        const camera = document.getElementById('camera');
+        const captureButton = document.getElementById('capture-button');
+        const stopButton = document.getElementById('stop-camera-button');
+        
+        let stream = camera.srcObject;
+        let tracks = stream.getTracks();
+
+        tracks.forEach(track => track.stop());
+        camera.srcObject = null;
+
+        camera.style.display = 'none';
+        captureButton.style.display = 'none';
+        stopButton.style.display = 'none';
+    }
+
+    function captureImage() {
+        const camera = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+        stopCamera();
+        // You can use the captured image data here
+    }
+
+    function redirectToPredictedInjury() {
+        const injuryVideos = {
+           'leg fracture': 'https://www.youtube.com/watch?v=qQNn2ErIc70&list=PLGi_K7VEsg4e4FiRjGWYPRdRqicF7Htww&index=7',
+            'head bleeding': 'https://www.youtube.com/watch?v=jLOph9Zn6HI&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=7',
+            'hand bleeding': 'https://www.youtube.com/watch?v=j5FRj7k9jgE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=8',
+            'hand fracture': 'https://www.youtube.com/watch?v=8Xmifg44umg&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=1',
+            'hand swelling': 'https://www.youtube.com/watch?v=jiztPa5qhvQ&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=3',
+            'leg bleeding': 'https://www.youtube.com/watch?v=tiB5ydP_TKg&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=5',
+            'knee fracture': 'https://www.youtube.com/watch?v=354-yuZBrDE&list=PLGi_K7VEsg4fpmfKpU8lTNSaG8C01sa5r&index=6'
+        };
+
+        if (detectedClass in injuryVideos) {
+            window.location.href = injuryVideos[detectedClass];
+        } else {
+            alert("भविष्यवाणी की गई चोट के लिए कोई वीडियो उपलब्ध नहीं है।");
+        }
+    }
+</script>
+
+</body>
+</html>
